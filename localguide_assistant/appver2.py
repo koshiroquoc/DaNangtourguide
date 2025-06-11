@@ -1,4 +1,5 @@
 import streamlit as st
+from streamlit_js_eval import streamlit_js_eval
 
 # ---- PAGE CONFIG ----
 st.set_page_config(page_title="Da Nang Tour Guide", layout="wide")
