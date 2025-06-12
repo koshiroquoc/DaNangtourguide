@@ -1,9 +1,3 @@
-#!/usr/bin/env python
-# coding: utf-8
-#get_ipython().system('pip install sentence-transformers pandas tqdm')
-#get_ipython().system('python -m spacy download en_core_web_md')
-#get_ipython().system('pip install "elasticsearch<9"')
-
 
 from elasticsearch import Elasticsearch
 from sentence_transformers import SentenceTransformer
@@ -12,72 +6,20 @@ from tqdm import tqdm
 import re
 import spacy
 
+#Connect back to the es db 
 es = Elasticsearch(
     hosts=["http://localhost:9200"],   
 )
 
 index_name = "places_danang"
-
-mapping = {
-    "mappings": {
-        "properties": {
-            "type": {"type": "keyword"},
-            "name": {"type": "text"},
-            "description": {"type": "text"},
-            "time": {"type": "keyword"},
-            "price": {"type": "keyword"},
-            "location": {"type": "text"},
-            "area": {"type": "keyword"},
-            "note": {"type": "text"},
-            "id": {"type": "keyword"},
-            "full_text": {"type": "text"},  
-            "vector_search": {
-                "type": "dense_vector",
-                "dims": 384,  
-                "index": True,           
-                "similarity": "cosine"  
-            }
-        }
-    }
-}
-
-
-try:
-    es.indices.create(index=index_name, body=mapping)
-except Exception as e:
-    print("Mapping error details:", getattr(e, 'info', str(e)))
-
-
-
-#Delete pervious index and create a new one: 
-if es.indices.exists(index=index_name):
-    es.indices.delete(index=index_name)
-es.indices.create(index=index_name, body=mapping)
-print(f"Index `{index_name}` đã được tạo!")
-
-
-
 model = SentenceTransformer('all-MiniLM-L6-v2')
 
+def check_index_exists(es, index_name):
+    return es.indices.exists(index=index_name)
 
-# In[11]:
-
-
-df = pd.read_csv("Data/data_danang_ok.csv")# Đường dẫn file của bạn
-
-
-def embed(text):
-    return model.encode(text).tolist()
-
-
-tqdm.pandas()
-df["vector_search"] = df["full_text"].progress_apply(embed)
-
-#indexing data to elasticsearch
-for i, row in tqdm(df.iterrows(), total=len(df)):
-    doc = row.to_dict()
-    # Nếu vector_search dạng numpy, cần chuyển sang list
-    es.index(index=index_name, id=doc["id"], document=doc)
+if not check_index_exists(es, index_name):
+    import subprocess
+    subprocess.run(["python", "Indexing.py"])
 
 
 # **Querry processing for better search**
@@ -119,32 +61,6 @@ def preprocess_query_for_vector(query):
 # **Search**
 
 
-
-
-'''
-def bm25_search(query, top_k=10):
-    processed_query = preprocess_bm25_query(query)  # extract keyword
-    body = {
-        "size": top_k,
-        "query": {
-            "multi_match": {
-                "query": processed_query,
-                "fields": ["name^3", "description^2", "note", "full_text"],
-                "operator": "or",  
-                "type": "most_fields"
-            }
-        }
-    }
-    res = es.search(index=index_name, body=body)
-    return [
-        {
-            "id": hit["_source"]["id"],
-            "score": hit["_score"],
-            "full_text": hit["_source"]["full_text"]
-        }
-        for hit in res["hits"]["hits"]
-    ]
-'''
 def bm25_search(query, top_k, type_filter=None):
     processed_query = preprocess_bm25_query(query)
 
@@ -191,34 +107,6 @@ def bm25_search(query, top_k, type_filter=None):
 #khi goi bm25_search(query, type_filter="eat") -> tim trong moi muc eat thoi 
 
 
-
-
-
-'''
-def vector_search(query, top_k=10):
-    query_vec = model.encode(query).tolist()
-    body = {
-        "size": top_k,
-        "query": {
-            "script_score": {
-                "query": {"match_all": {}},
-                "script": {
-                    "source": "cosineSimilarity(params.query_vector, 'vector_search') + 1.0",
-                    "params": {"query_vector": query_vec}
-                }
-            }
-        }
-    }
-    res = es.search(index=index_name, body=body)
-    return [
-        {
-            "id": hit["_source"]["id"],
-            "score": hit["_score"],
-            "full_text": hit["_source"]["full_text"]
-        }
-        for hit in res["hits"]["hits"]
-    ]
-'''
 def vector_search(query, top_k, type_filter=None):
     query = preprocess_query_for_vector(query)
     query_vec = model.encode(query).tolist()
@@ -293,38 +181,6 @@ def reciprocal_rank_fusion(lexical_hits, semantic_hits, k=60, top_k=5):
     return results
 
 
-
-
-
-'''
-def hybrid_search(query, top_k=5, alpha=0.5):
-    # BM25
-    bm25_results = bm25_search(query, top_k=top_k*2)
-    bm25_ids = {doc["id"]: doc for doc in bm25_results}
-
-    # Vector
-    vec_results = vector_search(query, top_k=top_k*2)
-    vec_ids = {doc["id"]: doc for doc in vec_results}
-
-    # Gộp tất cả id
-    all_ids = set(bm25_ids.keys()) | set(vec_ids.keys())
-
-    # Tính điểm hybrid
-    hybrid_results = []
-    for id_ in all_ids:
-        bm25_score = bm25_ids.get(id_, {}).get("score", 0)
-        vec_score = vec_ids.get(id_, {}).get("score", 0)
-        score = (1 - alpha) * bm25_score + alpha * vec_score
-        hybrid_results.append({
-            "id": id_,
-            "hybrid_score": score,
-            "full_text": bm25_ids.get(id_, vec_ids.get(id_, {})).get("full_text", "")
-        })
-
-    # Sort theo điểm hybrid
-    hybrid_results = sorted(hybrid_results, key=lambda x: x["hybrid_score"], reverse=True)[:top_k]
-    return hybrid_results
-'''
 def hybrid_search(query, top_k, k_rrf=60, type_filter=None):
     bm25_results = bm25_search(query, top_k=top_k*2,type_filter=type_filter )   # Lấy nhiều hơn để RRF hiệu quả hơn
     vector_results = vector_search(query, top_k=top_k*2, type_filter=type_filter)
@@ -385,8 +241,6 @@ search_results = hybrid_search(sample_query, top_k=2, type_filter="eat")  # ho�
 prompt = build_prompt(sample_query, search_results)
 print(prompt)
 '''
-
-
 
 from openai import OpenAI
 
