@@ -105,7 +105,7 @@ if st.session_state.page == "menu":
     # Contact dưới cùng
     st.markdown("""
         <div class="contact-me">
-            Contact me: <span style="letter-spacing:0.25em;">..........</span>
+            Contact me: <span style="letter-spacing:0.25em;">IG: Koshiroquoc</span>
         </div>
     """, unsafe_allow_html=True)
 
