@@ -11,5 +11,15 @@ services:
       - "9200:9200"
       - "9300:9300"
 
-
+  tourguide:  
+    build: .  
+    ports:  
+      - "8501:8501"  
+    depends_on:  
+      - elasticsearch  
+    environment:  
+      - ELASTICSEARCH_HOST=elasticsearch:9200  
+  
+volumes:  
+  es_data:
   
