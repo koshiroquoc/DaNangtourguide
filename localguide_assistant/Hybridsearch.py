@@ -5,6 +5,8 @@ import pandas as pd
 from tqdm import tqdm
 import re
 import spacy
+import os
+#pip install google-generativeai
 
 #Connect back to the es db 
 es = Elasticsearch(
@@ -214,8 +216,11 @@ Note: {note}
 """.strip()
 
 prompt_template = """
-You are a helpful local travel assistant for Da Nang. Answer the QUESTION based on the CONTEXT from our database of places to eat, see, and stay.
-Only use the facts from the CONTEXT when answering the QUESTION. If you don't know, say you don't know.
+You are a helpful local travel assistant for Da Nang. Answer the QUESTION using only the facts from the CONTEXT below. 
+If multiple relevant places are mentioned, list them with detailed descriptions (price, time, location, and unique notes). 
+Format your response in full sentences to help the traveler make an informed decision. If you do not know the answer, just say you do not know.
+
+
 
 QUESTION: {question}
 
@@ -242,8 +247,9 @@ prompt = build_prompt(sample_query, search_results)
 print(prompt)
 '''
 
-from openai import OpenAI
+#from openai import OpenAI
 
+'''
 client = OpenAI(
     base_url='http://localhost:11434/v1/',
     api_key='ollama',  
@@ -255,6 +261,21 @@ def llm(prompt):
         messages=[{"role": "user", "content": prompt}]
     )
     return response.choices[0].message.content
+'''
+
+
+import google.generativeai as genai
+from dotenv import load_dotenv
+load_dotenv()
+load_dotenv()
+api_key = os.getenv("GOOGLE_API_KEY")
+
+genai.configure(api_key=api_key)
+modelgpt = genai.GenerativeModel('gemma-3-12b-it')
+
+def llm(prompt):
+    response = modelgpt.generate_content(prompt)
+    return response.text
 
 
 def rag(query, type_filter=None, top_k=3):
