@@ -12,14 +12,28 @@ services:
       - "9300:9300"
 
   tourguide:  
-    build: .  
+    image: python:3.12
     ports:  
       - "8501:8501"  
     depends_on:  
       - elasticsearch  
     environment:  
       - ELASTICSEARCH_HOST=elasticsearch:9200  
-  
+
+  grafana:
+    build:
+      context: .
+      dockerfile: Dockerfile.grafana
+    container_name: grafana
+    ports:
+      - "3000:3000"
+    volumes:
+      - grafana-storage:/var/lib/grafana
+      - ./chat_log.csv:/var/lib/grafana/chat_log.csv:ro
+      - ./grafana.ini:/etc/grafana/grafana.ini:ro
+
+
+
 volumes:  
-  es_data:
-  
+  grafana-storage:
+

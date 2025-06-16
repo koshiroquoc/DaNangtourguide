@@ -6,6 +6,9 @@ from tqdm import tqdm
 import re
 import spacy
 import os
+import csv
+import time
+from datetime import datetime
 #pip install google-generativeai
 
 #Connect back to the es db 
@@ -276,16 +279,32 @@ modelgpt = genai.GenerativeModel('gemma-3-12b-it')
 def llm(prompt):
     response = modelgpt.generate_content(prompt)
     return response.text
-
+    
+def log_to_csv(question, answer, latency, status="ok"):
+    with open("chat_log.csv", mode="a", newline="", encoding="utf-8") as file:
+        writer = csv.writer(file)
+        writer.writerow([
+            datetime.now().strftime("%Y-%m-%d %H:%M:%S"),  # timestamp
+            question,
+            answer,
+            latency,
+            status
+        ])
 
 def rag(query, type_filter=None, top_k=3):
     search_results = hybrid_search(query, top_k=top_k, type_filter=type_filter)
     prompt = build_prompt(query, search_results)
     answer = llm(prompt)
+    #start_time = time.time()
+    #answer = llm(prompt)
+    #latency = round(time.time() - start_time, 3)
+    #log_to_csv(user_question, answer, latency)
+
     return answer
 
 # Test end-to-end
 #print(rag("Suggest a noodle soup for breakfast in the center", model="llama3.1", type_filter="eat"))
+
 
 
 
