@@ -1,6 +1,8 @@
 import streamlit as st
 import base64
 from pathlib import Path
+from Hybridsearch import rag, log_feedback
+
 
 st.set_page_config(page_title="Da Nang Tour Guide", layout="wide")
 
@@ -10,7 +12,7 @@ CATEGORY_CAPTION = {
     "stay": "🏨 Find your perfect stay in Da Nang! From budget hostels to luxury hotels. Ask me for locations, prices, amenities, or recommendations for your travel style!"
 }
 
-# ---- CUSTOM CSS ----
+# === CUSTOM CSS ===
 _bg_data = base64.b64encode(Path("localguide_assistant/Images/background.jpg").read_bytes()).decode()
 st.markdown(f"""
     <style>
@@ -114,6 +116,8 @@ if st.session_state.page == "menu":
     """, unsafe_allow_html=True)
 
 # ==== CHAT PAGE ====
+
+# ==== CHAT PAGE ====
 # Thêm dict caption ở đầu file
 
 
@@ -147,13 +151,12 @@ elif st.session_state.page == "chat":
 
     #user_input = st.text_input("Your question:", label_visibility="collapsed")
     st.markdown("</div></div>", unsafe_allow_html=True)  # Kết thúc block
-
     if user_input:
         from Hybridsearch import rag
         response = rag(user_input, type_filter=category)
         with col:
             st.markdown("""
-            <div style="
+          <div style="
                 margin-top:1.2em;
                 margin-bottom:1em;
                 background: rgba(10,22,40,0.70);
@@ -163,18 +166,76 @@ elif st.session_state.page == "chat":
                 font-size: 1.13em;
                 box-shadow: 0 2px 16px 0 rgba(0,0,0,0.14);
                 ">
-            """ + response + "</div>",
-            unsafe_allow_html=True)
+        """ + response + "</div>",
+        unsafe_allow_html=True)
+    
+    # Sử dụng 3 cột để căn giữa 2 nút
+        buff, like_col, dislike_col, buff2 = st.columns([1.5,1,1,1])
+    
+    # Kiểm tra feedback đã gửi chưa
+        if "feedback_sent" not in st.session_state:
+            st.session_state.feedback_sent = False
 
-    # Nút Back căn giữa
-    st.markdown("""
-        <div style="display:flex; justify-content:center; margin-top:1.3em;">
-            <form>
-                <button style="border-radius: 999px; padding: 0.85rem 2.8rem; background: rgba(255,255,255,0.93); color: #232b2b; font-size: 1.18rem; font-weight: 600; border:none; box-shadow:0 1px 8px 0 rgba(0,0,0,0.13); cursor:pointer;" onclick="window.location.reload(); return false;">⬅️ Back</button>
-            </form>
-        </div>
-    """, unsafe_allow_html=True)
-    # Nếu muốn dùng lại st.button và vẫn căn giữa:
-    # cols = st.columns([3,2,3])
-    # with cols[1]:
-    #     st.button("⬅️ Back", on_click=go_back)
+        if not st.session_state.feedback_sent:
+            with like_col:
+                if st.button("👍 Like", key="like_button"):
+                    log_feedback(user_input, response, "like")
+                    st.session_state.feedback_msg = "Thanks for your feedback!"
+                    st.session_state.feedback_sent = True
+            with dislike_col:
+                if st.button("👎 Dislike", key="dislike_button"):
+                    log_feedback(user_input, response, "dislike")
+                    st.session_state.feedback_msg = "Thanks for your feedback!"
+                    st.session_state.feedback_sent = True
+        else:
+            st.markdown(
+                '<div style="text-align:center; color:#fafafa; font-weight:600; margin-top:1em; margin-bottom:1.2em;">'
+                + st.session_state.get("feedback_msg", "Thanks for your feedback!")
+                + '</div>', unsafe_allow_html=True
+            )
+            st.markdown(
+                f"""
+                <div style="
+                    background: rgba(10, 22, 40, 0.33);
+                    border-radius: 2rem;
+                    color: #fff;
+                    padding: 0.75rem 2rem;
+                    margin-top: 9vh;
+                    margin-left: auto;
+                    margin-right: auto;
+                    text-align: center;
+                    max-width: 400px;
+                    font-size: 1.12rem;
+                    font-weight: 600;
+                ">
+                    {st.session_state.get("feedback_msg", "Thanks for your feedback!")}
+                </div>
+                """,
+                unsafe_allow_html=True
+            )
+
+
+    # Hiện nút Back căn giữa nếu đã gửi feedback
+        if st.session_state.feedback_sent:
+            st.markdown("""
+                <div style="display:flex; justify-content:center; margin-top:1.3em;">
+                    <form>
+                        <button style="border-radius: 999px; padding: 0.85rem 2.8rem; background: rgba(255,255,255,0.93); color: #232b2b; font-size: 1.18rem; font-weight: 600; border:none; box-shadow:0 1px 8px 0 rgba(0,0,0,0.13); cursor:pointer;" onclick="window.location.reload(); return false;">⬅️ Back</button>
+                    </form>
+                </div>
+            """, unsafe_allow_html=True)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    

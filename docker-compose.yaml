@@ -30,9 +30,9 @@ services:
     ports:
       - "3000:3000"
     volumes:
-      - ./grafana_data:/var/lib/grafana
-    depends_on:
-      - app
+      - ./grafana_data:/var/lib/grafana/csv
+    environment:
+      - GF_INSTALL_PLUGINS=marcusolsson-csv-datasource
   
 
 volumes:
