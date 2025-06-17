@@ -24,7 +24,7 @@ def check_index_exists(es, index_name):
 
 if not check_index_exists(es, index_name):
     import subprocess
-    subprocess.run(["python", "Indexing.py"])
+    subprocess.run(["python", "localguide_assistant/Indexing.py"])
 
 
 # **Querry processing for better search**

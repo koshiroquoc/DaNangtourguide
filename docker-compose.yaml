@@ -2,7 +2,7 @@ version: '3.8'
 
 services:
   elasticsearch:
-    image: docker.elastic.co/elasticsearch/elasticsearch:8.13.0
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.18.1
     container_name: elasticsearch
     environment:
       - discovery.type=single-node
@@ -13,15 +13,20 @@ services:
       - "9300:9300"
     volumes:
       - esdata:/usr/share/elasticsearch/data
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:9200 || exit 1"]
+      interval: 10s
+      timeout: 10s
+      retries: 20
 
   app:
     build: .
     container_name: danang-chatbot
     ports:
       - "8501:8501"
-      - "8888:8888"
     depends_on:
-      - elasticsearch
+      elasticsearch
+        condition: service_healthy
     volumes:
       - .:/app
 

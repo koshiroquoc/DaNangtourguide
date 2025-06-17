@@ -2,28 +2,25 @@ FROM python:3.12-slim
 
 WORKDIR /app
 
-# Cài các thư viện hệ thống tối thiểu
-RUN apt-get update && apt-get install -y \
+# Install system dependencies
+RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
-    curl \
     && rm -rf /var/lib/apt/lists/*
 
-# Copy toàn bộ code và data vào container
+# Install Python dependencies first for better cache
+COPY requirements.txt ./
+RUN pip install --no-cache-dir --upgrade pip && \
+    pip install --no-cache-dir -r requirements.txt
+
+# Copy application code
 COPY . .
 
-# Install Python dependencies
-RUN pip install --no-cache-dir --upgrade pip
-RUN pip install --no-cache-dir -r requirements.txt
-RUN pip install --no-cache-dir httpserver
-
-# Download spaCy model nếu code có dùng (xem lại Indexing.py có import spacy không)
+# Download spaCy model in case it is not bundled
 RUN python -m spacy download en_core_web_md
 
-# Expose port cho Streamlit UI
-EXPOSE 8501
-EXPOSE 8888
-
-# Lệnh mặc định (chỉnh lại nếu muốn chạy file python trực tiếp)
-COPY entrypoint.sh .
+# Ensure entrypoint is executable
 RUN chmod +x entrypoint.sh
-CMD ["./entrypoint.sh"]
+
+EXPOSE 8501
+
+ENTRYPOINT ["./entrypoint.sh"]
