@@ -89,6 +89,7 @@ Visit `http://localhost:8501` and start chatting.
   <video src="localguide_assistant/Images/Video_Demo_Real.mp4" controls width="600"></video>
 </p>
 
+[![Watch the demo](localguide_assistant/Images/howtouse.jpg)](https://youtu.be/xLPV0583Ctw)
 ## Usage Tips
 1. Choose a category (Eat, See or Stay).
 2. Ask natural language questions such as:
