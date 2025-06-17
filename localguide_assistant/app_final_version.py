@@ -1,4 +1,6 @@
 import streamlit as st
+import base64
+from pathlib import Path
 
 st.set_page_config(page_title="Da Nang Tour Guide", layout="wide")
 
@@ -9,13 +11,14 @@ CATEGORY_CAPTION = {
 }
 
 # ---- CUSTOM CSS ----
-st.markdown("""
+_bg_data = base64.b64encode(Path("localguide_assistant/Images/background.jpg").read_bytes()).decode()
+st.markdown(f"""
     <style>
-    .stApp {
-        background: url('http://127.0.0.1:8888/localguide_assistant/Images/background.jpg') no-repeat center center fixed;
+    .stApp {{
+        background: url('data:image/jpg;base64,{_bg_data}') no-repeat center center fixed;
         background-size: cover;
-    }
-    .centered-block {
+    }}
+    .centered-block {{
         background: rgba(10, 22, 40, 0.44);
         border-radius: 1.5rem;
         padding: 2rem 3rem 2.5rem 3rem;
@@ -26,15 +29,15 @@ st.markdown("""
         margin-left: auto;
         margin-right: auto;
         text-align: center;
-    }
-    .button-container {
+    }}
+    .button-container {{
         display: flex;
         justify-content: center;
         gap: 36px;
         margin: 2.7rem 0 2.2rem 0;
         flex-wrap: wrap;
-    }
-    div.stButton > button {
+    }}
+    div.stButton > button {{
         border-radius: 999px;
         padding: 0.85rem 2.6rem;
         background: rgba(255,255,255,0.93);
@@ -46,12 +49,12 @@ st.markdown("""
         transition: background 0.18s, color 0.18s;
         margin: 0;
         flex: 0 0 auto;
-    }
-    div.stButton > button:hover {
+    }}
+    div.stButton > button:hover {{
         background: #FFDB70;
         color: #232b2b;
-    }
-    .contact-me {
+    }}
+    .contact-me {{
         background: rgba(10, 22, 40, 0.33);
         border-radius: 2rem;
         color: #fff;
@@ -62,7 +65,7 @@ st.markdown("""
         text-align: center;
         max-width: 400px;
         font-size: 1.12rem;
-    }
+    }}
     </style>
 """, unsafe_allow_html=True)
 
