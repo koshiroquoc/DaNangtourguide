@@ -13,11 +13,6 @@ services:
       - "9300:9300"
     volumes:
       - esdata:/usr/share/elasticsearch/data
-    healthcheck:
-      test: ["CMD-SHELL", "curl -f http://localhost:9200 || exit 1"]
-      interval: 10s
-      timeout: 10s
-      retries: 20
 
   app:
     build: .
@@ -25,10 +20,22 @@ services:
     ports:
       - "8501:8501"
     depends_on:
-      elasticsearch
-        condition: service_healthy
+      - elasticsearch
     volumes:
       - .:/app
+  
+  grafana:
+    image: grafana/grafana
+    container_name: grafana
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./grafana_data:/var/lib/grafana
+    depends_on:
+      - app
+  
 
 volumes:
   esdata:
+  grafana:
+

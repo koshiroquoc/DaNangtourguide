@@ -279,7 +279,8 @@ modelgpt = genai.GenerativeModel('gemma-3-12b-it')
 def llm(prompt):
     response = modelgpt.generate_content(prompt)
     return response.text
-    
+
+'''    
 def log_to_csv(question, answer, latency, status="ok"):
     with open("chat_log.csv", mode="a", newline="", encoding="utf-8") as file:
         writer = csv.writer(file)
@@ -289,6 +290,22 @@ def log_to_csv(question, answer, latency, status="ok"):
             answer,
             latency,
             status
+        ])
+'''
+
+def log_feedback(question, answer, feedback):
+    """Append user feedback to grafana_data/chat_log.csv."""
+    file_path = os.path.join("grafana_data", "chat_log.csv")
+    file_exists = os.path.isfile(file_path)
+    with open(file_path, mode="a", newline="", encoding="utf-8") as file:
+        writer = csv.writer(file)
+        if not file_exists:
+            writer.writerow(["timestamp", "question", "answer", "feedback"])
+        writer.writerow([
+            datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+            question,
+            answer,
+            feedback,
         ])
 
 def rag(query, type_filter=None, top_k=3):
