@@ -84,6 +84,11 @@ Visit `http://localhost:8501` and start chatting.
 3. **RAG Generation** – Retrieved documents are formatted into a prompt and sent to Google Gemma to generate the final answer.
 4. **Interface** – `app_final_version.py` offers a simple menu-based interface built with Streamlit.
 
+## Demo Video
+<p align="center">
+  <video src="localguide_assistant/Images/Video_Demo_Real.mp4" controls width="600"></video>
+</p>
+
 ## Usage Tips
 1. Choose a category (Eat, See or Stay).
 2. Ask natural language questions such as:
