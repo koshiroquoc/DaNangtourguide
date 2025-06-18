@@ -49,16 +49,16 @@ STOP_WORDS = {
 }
 
 def preprocess_query_for_vector(query):
-    # Bỏ dấu câu (tuỳ chọn, để nguyên cũng được vì embedding model hiểu)
+    # Remove the mark ( ., / ? )
     query_no_punct = re.sub(r'[^\w\s]', '', query)
-    # Bỏ stopword, giữ lại trật tự và ý nghĩa câu
+    # Remove stopword
     words = query_no_punct.split()
     filtered = [w for w in words if w.lower() not in STOP_WORDS]
-    # Ghép lại thành câu ngắn gọn
+    # Put everything back to a sentence
     processed_query = " ".join(filtered) if filtered else query
     return processed_query
 
-# Ví dụ:
+# Example:
 #preprocess_query_for_vector( "Where to eat Bun Bo Hue in the evening?")
     #-> "Where eat Bun Bo Hue evening"
 
@@ -80,7 +80,7 @@ def bm25_search(query, top_k, type_filter=None):
         }
     ]
 
-    # Nếu có filter, thêm điều kiện
+    # Filter (eat/stay/see)
     if type_filter:
         must_clauses.append({"term": {"type": type_filter}})
 
@@ -109,14 +109,14 @@ def bm25_search(query, top_k, type_filter=None):
         }
         for hit in res["hits"]["hits"]
     ]
-#khi goi bm25_search(query, type_filter="eat") -> tim trong moi muc eat thoi 
+#EX:  bm25_search(query, type_filter="eat") -> Just look for 'eat' data
 
 
 def vector_search(query, top_k, type_filter=None):
     query = preprocess_query_for_vector(query)
     query_vec = model.encode(query).tolist()
 
-    # Nếu có filter, dùng bool; nếu không, dùng match_all như cũ
+    # use filter bool for filter 
     if type_filter:
         inner_query = {
             "bool": {
@@ -194,10 +194,6 @@ def hybrid_search(query, top_k, k_rrf=60, type_filter=None):
 
 
 # **Testing search**
-
-# In[71]:
-
-
 #query = "Where to eat beef noodles"
 #print("BM25:", bm25_search(query, type_filter = 'eat'))
 #print("Vector:", vector_search(query, type_filter="see"))

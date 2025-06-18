@@ -10,7 +10,7 @@ import pandas as pd
 from tqdm import tqdm
 import re
 
-print(">>> ĐANG RUN INDEXING.PY <<<")
+print(">>>RUNNING INDEXING.PY <<<")
 
 es = Elasticsearch(
     hosts=["http://localhost:9200"],   
@@ -51,7 +51,7 @@ else:
 
 
 model = SentenceTransformer('all-MiniLM-L6-v2')
-df = pd.read_csv("Data/data_danang_ok.csv")# Đường dẫn file của bạn
+df = pd.read_csv("Data/data_danang_ok.csv")
 
 
 def embed(text):
@@ -64,5 +64,5 @@ df["vector_search"] = df["full_text"].progress_apply(embed)
 #indexing data to elasticsearch
 for i, row in tqdm(df.iterrows(), total=len(df)):
     doc = row.to_dict()
-    # Nếu vector_search dạng numpy, cần chuyển sang list
+    # if Vectorsearch is Numpy  transfrom to list
     es.index(index=index_name, id=doc["id"], document=doc)

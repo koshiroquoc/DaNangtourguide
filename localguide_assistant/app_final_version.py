@@ -117,10 +117,6 @@ if st.session_state.page == "menu":
 
 # ==== CHAT PAGE ====
 
-# ==== CHAT PAGE ====
-# Thêm dict caption ở đầu file
-
-
 elif st.session_state.page == "chat":
     category = st.session_state.category
     caption = CATEGORY_CAPTION.get(category, "")
@@ -133,7 +129,7 @@ elif st.session_state.page == "chat":
             <p style="color:#fafafa; margin-bottom:0.5em;">💬 Ask me anything about local places!</p>
     """, unsafe_allow_html=True)
     
-    # Căn input chat đúng chiều rộng
+    # Adjust the box chat
     st.markdown("""
         <style>
         .chat-input-box {max-width: 320px; margin-left:auto; margin-right:auto;}
@@ -150,7 +146,7 @@ elif st.session_state.page == "chat":
         user_input = st.text_input("Your question:", label_visibility="collapsed")
 
     #user_input = st.text_input("Your question:", label_visibility="collapsed")
-    st.markdown("</div></div>", unsafe_allow_html=True)  # Kết thúc block
+    st.markdown("</div></div>", unsafe_allow_html=True)  
     if user_input:
         from Hybridsearch import rag
         response = rag(user_input, type_filter=category)
@@ -169,10 +165,10 @@ elif st.session_state.page == "chat":
         """ + response + "</div>",
         unsafe_allow_html=True)
     
-    # Sử dụng 3 cột để căn giữa 2 nút
+    # Center 3 button
         buff, like_col, dislike_col, buff2 = st.columns([1.5,1,1,1])
     
-    # Kiểm tra feedback đã gửi chưa
+    # Check if feedback sent are not 
         if "feedback_sent" not in st.session_state:
             st.session_state.feedback_sent = False
 
@@ -215,7 +211,7 @@ elif st.session_state.page == "chat":
             )
 
 
-    # Hiện nút Back căn giữa nếu đã gửi feedback
+    # Back button appear after send feedback
         if st.session_state.feedback_sent:
             st.markdown("""
                 <div style="display:flex; justify-content:center; margin-top:1.3em;">
