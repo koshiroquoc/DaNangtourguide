@@ -1,3 +1,4 @@
+"""Streamlit front-end for the Da Nang Tour Guide chatbot."""
 import streamlit as st
 import base64
 from pathlib import Path
@@ -77,10 +78,16 @@ if "category" not in st.session_state:
     st.session_state.category = None
 
 def go_to_chat(category):
+    """Switch to the chat page.
+
+    Args:
+        category (str): Selected place category.
+    """
     st.session_state.category = category
     st.session_state.page = "chat"
 
 def go_back():
+    """Return to the menu page."""
     st.session_state.page = "menu"
 
 # ==== MENU PAGE ====
