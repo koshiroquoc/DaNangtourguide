@@ -1,4 +1,10 @@
-
+"""Hybrid search and retrieval-augmented generation utilities.
+This module provides helpers for combining BM25 keyword search with
+dense vector search in Elasticsearch. The retrieved documents are then
+formatted into a prompt and passed to a language model. The ``rag``
+function orchestrates this workflow so other modules can easily obtain
+answers.
+"""
 from elasticsearch import Elasticsearch
 from sentence_transformers import SentenceTransformer
 import pandas as pd
@@ -20,6 +26,15 @@ index_name = "places_danang"
 model = SentenceTransformer('all-MiniLM-L6-v2')
 
 def check_index_exists(es, index_name):
+    """Check whether an index exists in Elasticsearch.
+
+    Args:
+        es (Elasticsearch): Client connection.
+        index_name (str): Name of the index to check.
+
+    Returns:
+        bool: ``True`` if the index exists.
+    """
     return es.indices.exists(index=index_name)
 
 if not check_index_exists(es, index_name):
@@ -33,6 +48,14 @@ if not check_index_exists(es, index_name):
 #extract keywords for better keyword search
 nlp = spacy.load("en_core_web_md")
 def preprocess_bm25_query(query):
+    """Extract noun chunks to improve BM25 matching.
+
+    Args:
+        query (str): User question.
+
+    Returns:
+        str: Space-separated noun chunks.
+    """
     doc = nlp(query)
     return " ".join([chunk.text.strip() for chunk in doc.noun_chunks if len(chunk.text.strip()) > 2])
 #preprocess_bm25_query("suggest a noodle soup for breakfast near center")
@@ -49,6 +72,14 @@ STOP_WORDS = {
 }
 
 def preprocess_query_for_vector(query):
+    """Clean text before vector embedding.
+
+    Args:
+        query (str): Raw user input.
+
+    Returns:
+        str: Processed text suitable for embedding.
+    """
     # Remove the mark ( ., / ? )
     query_no_punct = re.sub(r'[^\w\s]', '', query)
     # Remove stopword
@@ -60,13 +91,23 @@ def preprocess_query_for_vector(query):
 
 # Example:
 #preprocess_query_for_vector( "Where to eat Bun Bo Hue in the evening?")
-    #-> "Where eat Bun Bo Hue evening"
+#-> "Where eat Bun Bo Hue evening"
 
 
 # **Search**
 
 
 def bm25_search(query, top_k, type_filter=None):
+    """Run a BM25 keyword search.
+
+    Args:
+        query (str): User query.
+        top_k (int): Number of results to return.
+        type_filter (str | None): Restrict results to a place type.
+
+    Returns:
+        list[dict]: Sorted search results.
+    """
     processed_query = preprocess_bm25_query(query)
 
     must_clauses = [
@@ -113,6 +154,16 @@ def bm25_search(query, top_k, type_filter=None):
 
 
 def vector_search(query, top_k, type_filter=None):
+    """Perform dense vector search using cosine similarity.
+
+    Args:
+        query (str): User query.
+        top_k (int): Number of results to return.
+        type_filter (str | None): Restrict results to a place type.
+
+    Returns:
+        list[dict]: Search results ordered by vector score.
+    """
     query = preprocess_query_for_vector(query)
     query_vec = model.encode(query).tolist()
 
@@ -163,6 +214,17 @@ def vector_search(query, top_k, type_filter=None):
 
 
 def reciprocal_rank_fusion(lexical_hits, semantic_hits, k=60, top_k=5):
+    """Fuse lexical and vector results using Reciprocal Rank Fusion.
+
+    Args:
+        lexical_hits (list[dict]): Hits from BM25 search.
+        semantic_hits (list[dict]): Hits from vector search.
+        k (int, optional): RRF constant. Defaults to ``60``.
+        top_k (int, optional): Number of final results. Defaults to ``5``.
+
+    Returns:
+        list[dict]: Combined and re-ranked results.
+    """
     rrf_scores = {}
     # Lexical hits
     for rank, hit in enumerate(lexical_hits, start=1):
@@ -187,7 +249,18 @@ def reciprocal_rank_fusion(lexical_hits, semantic_hits, k=60, top_k=5):
 
 
 def hybrid_search(query, top_k, k_rrf=60, type_filter=None):
-    bm25_results = bm25_search(query, top_k=top_k*2,type_filter=type_filter )   # Lấy nhiều hơn để RRF hiệu quả hơn
+    """Combine lexical and semantic search results.
+
+    Args:
+        query (str): User query.
+        top_k (int): Number of final results to return.
+        k_rrf (int, optional): RRF constant. Defaults to ``60``.
+        type_filter (str | None): Restrict results to a place type.
+
+    Returns:
+        list[dict]: Ranked search results.
+    """
+    bm25_results = bm25_search(query, top_k=top_k*2,type_filter=type_filter )    # more results help RRF
     vector_results = vector_search(query, top_k=top_k*2, type_filter=type_filter)
     results = reciprocal_rank_fusion(bm25_results, vector_results, k=k_rrf, top_k=top_k)
     return results
@@ -231,6 +304,15 @@ CONTEXT:
 
 
 def build_prompt(query, search_results):
+    """Create a prompt for the language model.
+
+    Args:
+        query (str): Original user question.
+        search_results (list[dict]): Retrieved documents.
+
+    Returns:
+        str: Formatted prompt string.
+    """
     context = ""
     for doc in search_results:
         context += entry_template.format(**doc) + "\n\n"
@@ -273,24 +355,25 @@ genai.configure(api_key=api_key)
 modelgpt = genai.GenerativeModel('gemma-3-12b-it')
 
 def llm(prompt):
+    """Query Google Generative AI for a completion.
+
+    Args:
+        prompt (str): Prompt text to send to the model.
+
+    Returns:
+        str: Generated response text.
+    """
     response = modelgpt.generate_content(prompt)
     return response.text
 
-'''    
-def log_to_csv(question, answer, latency, status="ok"):
-    with open("chat_log.csv", mode="a", newline="", encoding="utf-8") as file:
-        writer = csv.writer(file)
-        writer.writerow([
-            datetime.now().strftime("%Y-%m-%d %H:%M:%S"),  # timestamp
-            question,
-            answer,
-            latency,
-            status
-        ])
-'''
-
 def log_feedback(question, answer, feedback):
-    """Append user feedback to grafana_data/chat_log.csv."""
+    """Append a feedback entry to ``grafana_data/chat_log.csv``.
+
+    Args:
+        question (str): User question.
+        answer (str): Assistant response.
+        feedback (str): Either ``"like"`` or ``"dislike"``.
+    """
     file_path = os.path.join("grafana_data", "chat_log.csv")
     file_exists = os.path.isfile(file_path)
     with open(file_path, mode="a", newline="", encoding="utf-8") as file:
@@ -305,6 +388,16 @@ def log_feedback(question, answer, feedback):
         ])
 
 def rag(query, type_filter=None, top_k=3):
+    """Execute retrieval-augmented generation.
+
+    Args:
+        query (str): User question.
+        type_filter (str | None, optional): Restrict by place type.
+        top_k (int, optional): Number of documents to retrieve. Defaults to ``3``.
+
+    Returns:
+        str: Generated answer text.
+    """
     search_results = hybrid_search(query, top_k=top_k, type_filter=type_filter)
     prompt = build_prompt(query, search_results)
     answer = llm(prompt)
