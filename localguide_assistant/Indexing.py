@@ -4,6 +4,7 @@
 #get_ipython().system('python -m spacy download en_core_web_md')
 #get_ipython().system('pip install "elasticsearch<9"')
 
+"""Index the Da Nang dataset into Elasticsearch."""
 from elasticsearch import Elasticsearch
 from sentence_transformers import SentenceTransformer
 import pandas as pd
@@ -55,6 +56,14 @@ df = pd.read_csv("Data/data_danang_ok.csv")
 
 
 def embed(text):
+    """Embed a piece of text.
+
+    Args:
+        text (str): Input text.
+
+    Returns:
+        list[float]: Embedding vector.
+    """
     return model.encode(text).tolist()
 
 
@@ -64,5 +73,5 @@ df["vector_search"] = df["full_text"].progress_apply(embed)
 #indexing data to elasticsearch
 for i, row in tqdm(df.iterrows(), total=len(df)):
     doc = row.to_dict()
-    # if Vectorsearch is Numpy  transfrom to list
+    # `vector_search` is already a list from embed(); just send the document
     es.index(index=index_name, id=doc["id"], document=doc)
