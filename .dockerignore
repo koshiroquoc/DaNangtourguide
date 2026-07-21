@@ -1,0 +1,9 @@
+.env
+.git
+.gitignore
+.pytest_cache
+**/__pycache__
+**/*.pyc
+NoteBook/
+grafana_data/*.db
+localguide_assistant/Images/Video_Demo_Real.mp4

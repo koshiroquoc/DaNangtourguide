@@ -129,12 +129,18 @@ celerybeat.pid
 
 # Environments
 .env
+.env.*
+!.env.example
 .venv
 env/
 venv/
 ENV/
 env.bak/
 venv.bak/
+
+# Local application state
+grafana_data/*.db
+grafana_data/*.db-*
 
 # Spyder project settings
 .spyderproject
