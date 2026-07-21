@@ -45,9 +45,7 @@ def test_rrf_rewards_documents_present_in_both_rankings() -> None:
     lexical = [{"id": "a", "score": 8.0}, {"id": "b", "score": 7.0}]
     semantic = [{"id": "b", "score": 1.8}, {"id": "c", "score": 1.7}]
 
-    results = reciprocal_rank_fusion(
-        lexical, semantic, rank_constant=60, top_k=3
-    )
+    results = reciprocal_rank_fusion(lexical, semantic, rank_constant=60, top_k=3)
 
     assert [result["id"] for result in results] == ["b", "a", "c"]
     assert results[0]["lexical_score"] == 7.0
@@ -67,14 +65,32 @@ def test_bm25_uses_raw_query_and_filter_context() -> None:
     assert multi_match["query"] == "restaurants not spicy under $30"
     assert call["query"]["bool"]["filter"] == [{"term": {"type": "eat"}}]
     assert call["source_includes"] == [
+        "schema_version",
         "id",
         "name",
+        "name_vi",
+        "name_en",
         "description",
-        "time",
-        "price",
-        "location",
+        "description_origin",
+        "address",
         "area",
-        "note",
+        "latitude",
+        "longitude",
+        "categories",
+        "cuisine",
+        "opening_hours",
+        "phone",
+        "website",
+        "price_min_vnd",
+        "price_max_vnd",
+        "price_currency",
+        "source",
+        "source_url",
+        "source_license",
+        "source_updated_at",
+        "retrieved_at",
+        "last_verified_at",
+        "is_synthetic",
         "type",
     ]
     assert results[0]["id"] == "eat_001"

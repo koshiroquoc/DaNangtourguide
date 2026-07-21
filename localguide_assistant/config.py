@@ -47,15 +47,17 @@ class Settings:
             elasticsearch_host=os.getenv(
                 "ELASTICSEARCH_HOST", "http://localhost:9200"
             ).rstrip("/"),
-            index_name=os.getenv("ELASTICSEARCH_INDEX", "places_danang"),
+            index_name=os.getenv("ELASTICSEARCH_INDEX", "places_danang_v2"),
             embedding_model=os.getenv(
                 "EMBEDDING_MODEL", "sentence-transformers/all-MiniLM-L6-v2"
             ),
             generation_model=os.getenv("GENERATION_MODEL", "gemma-3-12b-it"),
-            google_api_key=os.getenv("GOOGLE_API_KEY")
-            or os.getenv("GEMINI_API_KEY"),
+            google_api_key=os.getenv("GOOGLE_API_KEY") or os.getenv("GEMINI_API_KEY"),
             data_path=Path(
-                os.getenv("DATA_PATH", str(PROJECT_ROOT / "Data/data_danang_ok.csv"))
+                os.getenv(
+                    "DATA_PATH",
+                    str(PROJECT_ROOT / "Data/processed/places_osm_v2.jsonl"),
+                )
             ).expanduser(),
             feedback_db_path=Path(
                 os.getenv(

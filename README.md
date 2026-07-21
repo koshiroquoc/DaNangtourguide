@@ -10,16 +10,17 @@
 Travelers often struggle to find truly local recommendations. This project solves that problem by indexing a curated dataset of Da Nang restaurants, attractions, and hotels into Elasticsearch. A hybrid retrieval pipeline then feeds the most relevant entries to Google's Gemma model so that users get trustworthy answers in natural language.
 
 ## Dataset
-The main dataset is `Data/data_danang_ok.csv` (299 rows). Each record includes:
 
-- `type` – category (`eat`, `see`, `stay`)
-- `name` and `description`
-- `time`, `price`, `location` and `area`
-- additional `note` field
+The default dataset is now a reproducible, provenance-backed OpenStreetMap
+snapshot in `Data/processed/places_osm_v2.jsonl`. Every record links to its
+upstream OSM element and includes its source license, edit timestamp, snapshot
+timestamp, coordinates, and an explicit synthetic-data flag.
 
-Embeddings are generated in batches when the Elasticsearch index is first
-created. The source CSV ships with the repository, but the vector index is
-runtime state rather than source data.
+The original 299-row generated CSV remains unchanged as a legacy evaluation
+baseline. It is no longer presented as verified local data. Missing OSM facts
+such as prices and manually verified status remain null rather than being
+generated. See `Data/README.md`, `docs/data_contract_v2.md`, and the generated
+quality report in `docs/reports/data_quality_osm.md`.
 
 ## Project Structure
 ```
@@ -36,7 +37,16 @@ localguide_assistant/
 └── Images/                 # UI assets
 
 Data/
-└── data_danang_ok.csv      # Tourism database
+├── processed/              # Provenance-backed OSM v2 snapshot + metadata
+├── README.md               # Sources, license, and refresh policy
+└── data_danang_ok.csv      # Unchanged synthetic legacy baseline
+
+data_pipeline/
+├── build_dataset.py        # Reproducible Overpass snapshot command
+├── osm.py                  # OSM query, normalization, and deduplication
+├── schema.py               # Versioned place contract and validation
+├── quality.py              # Quality gates and report generation
+└── legacy.py               # Explicit legacy price parsing helper
 
 NoteBook/
 ├── Hybridsearch_test.ipynb # Development notebook
@@ -90,8 +100,8 @@ Visit `http://localhost:8501` and start chatting.
 
 ## How It Works
 1. **Indexing** – `indexer.py` batch-embeds atomic place records and bulk
-   upserts them into Elasticsearch. Repeated container starts skip a current
-   index.
+   indexes them into Elasticsearch. Repeated starts skip only when the source
+   row count and SHA-256 fingerprint both match.
 2. **Hybrid Search** – `retrieval.py` runs BM25 and dense retrieval, then
    combines their ranks with Reciprocal Rank Fusion.
 3. **RAG Generation** – Source-labelled records are sent through the supported
@@ -138,7 +148,12 @@ numbers must not be treated as product-quality discovery metrics. A
 query-centric, multi-relevance evaluation set is the next project phase.
 
 ## Limitations
-The dataset contains only about **300** venues. It may not include every business in Da Nang, and some information might be outdated. Answers are generated with **Google's Gemma model**, so occasional inaccuracies or biased content are possible.
+The OSM snapshot has broad coverage but sparse opening-hours, contact, and
+price metadata. An OSM edit timestamp does not prove that a business still
+operates, and this phase does not manually verify venues. Answers are generated
+with **Google's Gemma model**, so occasional inaccuracies or biased content are
+possible. The interface exposes source links so users can verify important
+details.
 
 ## Contact
 - GitHub: [@koshiroquoc](https://github.com/koshiroquoc)

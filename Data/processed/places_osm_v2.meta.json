@@ -1,0 +1,18 @@
+{
+  "attribution": "© OpenStreetMap contributors",
+  "bbox": [
+    15.9,
+    107.9,
+    16.25,
+    108.35
+  ],
+  "dataset_sha256": "d5cd6949762e66bf6110debf63a090017bd7c5a1c6cd27bfb41106be0a905c4f",
+  "product_readiness": "needs_enrichment",
+  "quality_status": "pass",
+  "record_count": 2557,
+  "retrieved_at": "2026-07-21T08:04:58+00:00",
+  "schema_version": 2,
+  "source": "OpenStreetMap",
+  "source_license": "ODbL-1.0",
+  "source_origin": "https://overpass-api.de/api/interpreter"
+}

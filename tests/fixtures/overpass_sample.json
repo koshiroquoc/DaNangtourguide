@@ -1,0 +1,52 @@
+{
+  "version": 0.6,
+  "elements": [
+    {
+      "type": "node",
+      "id": 101,
+      "lat": 16.0544,
+      "lon": 108.2022,
+      "timestamp": "2026-06-01T10:00:00Z",
+      "tags": {
+        "name": "Quán Mì Quảng Thật",
+        "name:vi": "Quán Mì Quảng Thật",
+        "amenity": "restaurant",
+        "cuisine": "vietnamese;noodle",
+        "opening_hours": "Mo-Su 06:00-21:00",
+        "addr:housenumber": "12",
+        "addr:street": "Đường Mẫu",
+        "addr:district": "Hải Châu"
+      }
+    },
+    {
+      "type": "way",
+      "id": 202,
+      "timestamp": "2026-05-05T09:30:00Z",
+      "center": {"lat": 16.0611, "lon": 108.2277},
+      "tags": {
+        "name": "Khách sạn Biển Mẫu",
+        "tourism": "hotel",
+        "website": "https://example.org/hotel"
+      }
+    },
+    {
+      "type": "relation",
+      "id": 303,
+      "timestamp": "2026-04-02T08:15:00Z",
+      "center": {"lat": 16.0678, "lon": 108.2208},
+      "tags": {
+        "name": "Bảo tàng Mẫu",
+        "tourism": "museum",
+        "description": "A sample museum record from OSM."
+      }
+    },
+    {
+      "type": "node",
+      "id": 404,
+      "lat": 16.1000,
+      "lon": 108.2500,
+      "timestamp": "2026-03-01T07:00:00Z",
+      "tags": {"name": "Unrelated Shop", "shop": "clothes"}
+    }
+  ]
+}

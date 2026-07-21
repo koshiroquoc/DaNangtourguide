@@ -32,6 +32,8 @@ def test_prompt_labels_sources_for_citations() -> None:
     assert "[S1]" in prompt
     assert "[S2]" in prompt
     assert "Where should I eat?" in prompt
+    assert "Price: Unknown" in prompt
+    assert "Never infer opening hours, prices, or verification" in prompt
 
 
 def test_generator_fails_early_when_key_is_missing() -> None:
