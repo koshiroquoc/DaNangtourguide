@@ -12,6 +12,7 @@ PROMPT_TEMPLATE = """You are a helpful local travel assistant for Da Nang.
 Answer the QUESTION using only facts from the SOURCES below.
 When recommending a place, cite its source label such as [S1].
 If the sources do not contain enough information, say that you do not know.
+Treat null or missing fields as unknown. Never infer opening hours, prices, or verification.
 
 QUESTION:
 {question}
@@ -25,6 +26,14 @@ def build_prompt(query: str, search_results: list[dict[str, Any]]) -> str:
     """Create a source-labelled grounding prompt."""
     entries = []
     for position, result in enumerate(search_results, start=1):
+        minimum = result.get("price_min_vnd")
+        maximum = result.get("price_max_vnd")
+        if minimum is None and maximum is None:
+            price = "Unknown"
+        elif minimum == maximum or maximum is None:
+            price = f"{minimum:,} VND"
+        else:
+            price = f"{minimum:,}-{maximum:,} VND"
         entries.append(
             "\n".join(
                 [
@@ -32,11 +41,17 @@ def build_prompt(query: str, search_results: list[dict[str, Any]]) -> str:
                     f"Name: {result.get('name', '')}",
                     f"Type: {result.get('type', '')}",
                     f"Description: {result.get('description', '')}",
-                    f"Time: {result.get('time', '')}",
-                    f"Price: {result.get('price', '')}",
-                    f"Location: {result.get('location', '')}",
+                    f"Description origin: {result.get('description_origin', 'Unknown')}",
+                    f"Categories: {', '.join(result.get('categories') or [])}",
+                    f"Cuisine: {', '.join(result.get('cuisine') or [])}",
+                    f"Opening hours: {result.get('opening_hours') or 'Unknown'}",
+                    f"Price: {price}",
+                    f"Address: {result.get('address') or 'Unknown'}",
                     f"Area: {result.get('area', '')}",
-                    f"Note: {result.get('note', '')}",
+                    f"Website: {result.get('website') or 'Unknown'}",
+                    f"Source URL: {result.get('source_url') or 'Unknown'}",
+                    f"Source updated: {result.get('source_updated_at') or 'Unknown'}",
+                    f"Manually verified: {result.get('last_verified_at') or 'No'}",
                 ]
             )
         )
@@ -46,9 +61,7 @@ def build_prompt(query: str, search_results: list[dict[str, Any]]) -> str:
 class GoogleGenerator:
     """Small adapter around the supported Google GenAI SDK."""
 
-    def __init__(
-        self, settings: Settings, *, client: Any | None = None
-    ) -> None:
+    def __init__(self, settings: Settings, *, client: Any | None = None) -> None:
         if not settings.google_api_key:
             raise RuntimeError(
                 "Missing GOOGLE_API_KEY (or GEMINI_API_KEY). Add it to .env "

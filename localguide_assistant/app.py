@@ -88,10 +88,26 @@ def _render_menu() -> None:
 def _render_sources(sources: list[dict[str, Any]]) -> None:
     with st.expander("Sources used"):
         for position, source in enumerate(sources, start=1):
+            name = source.get("name", "Unknown")
+            source_url = source.get("source_url")
+            heading = f"[{name}]({source_url})" if source_url else name
+            details = [
+                source.get("address"),
+                source.get("area"),
+                source.get("opening_hours"),
+            ]
             st.markdown(
-                f"**[S{position}] {source.get('name', 'Unknown')}**  \n"
-                f"{source.get('location', '')} · {source.get('area', '')} · "
-                f"{source.get('price', '')}"
+                f"**[S{position}] {heading}**  \n"
+                + " · ".join(value for value in details if value)
+            )
+            verification = source.get("last_verified_at") or "not manually verified"
+            source_updated = source.get("source_updated_at") or "unknown"
+            st.caption(
+                f"Source record updated: {source_updated} · Project status: {verification}"
+            )
+        if any(source.get("source") == "OpenStreetMap" for source in sources):
+            st.caption(
+                "[© OpenStreetMap contributors](https://www.openstreetmap.org/copyright) · ODbL 1.0"
             )
 
 
@@ -120,9 +136,9 @@ def _render_chat() -> None:
         st.session_state.feedback_sent = False
         try:
             with st.spinner("Looking through the local guide…"):
-                st.session_state.response = load_service().ask(
-                    prompt, type_filter=category, top_k=3
-                ).to_dict()
+                st.session_state.response = (
+                    load_service().ask(prompt, type_filter=category, top_k=3).to_dict()
+                )
         except Exception as error:
             st.session_state.response = None
             st.error(f"The guide could not answer right now: {error}")

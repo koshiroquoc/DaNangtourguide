@@ -11,14 +11,32 @@ from .config import Settings
 
 
 SOURCE_FIELDS = [
+    "schema_version",
     "id",
     "name",
+    "name_vi",
+    "name_en",
     "description",
-    "time",
-    "price",
-    "location",
+    "description_origin",
+    "address",
     "area",
-    "note",
+    "latitude",
+    "longitude",
+    "categories",
+    "cuisine",
+    "opening_hours",
+    "phone",
+    "website",
+    "price_min_vnd",
+    "price_max_vnd",
+    "price_currency",
+    "source",
+    "source_url",
+    "source_license",
+    "source_updated_at",
+    "retrieved_at",
+    "last_verified_at",
+    "is_synthetic",
     "type",
 ]
 VALID_TYPES = {"eat", "see", "stay"}
@@ -81,9 +99,9 @@ def reciprocal_rank_fusion(
             item[score_name] = float(hit.get("score", 0.0))
             item["rrf_score"] += 1.0 / (rank_constant + rank)
 
-    return sorted(
-        fused.values(), key=lambda item: item["rrf_score"], reverse=True
-    )[:top_k]
+    return sorted(fused.values(), key=lambda item: item["rrf_score"], reverse=True)[
+        :top_k
+    ]
 
 
 class PlaceRetriever:
@@ -134,8 +152,12 @@ class PlaceRetriever:
                                 "query": query,
                                 "fields": [
                                     "name^3",
+                                    "name_vi^3",
+                                    "name_en^3",
                                     "description^2",
-                                    "note",
+                                    "address",
+                                    "categories^2",
+                                    "cuisine^2",
                                     "full_text",
                                 ],
                                 "operator": "or",
