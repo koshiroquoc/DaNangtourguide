@@ -1,11 +1,13 @@
 elasticsearch==8.18.1
-en_core_web_md @ https://github.com/explosion/spacy-models/releases/download/en_core_web_md-3.8.0/en_core_web_md-3.8.0-py3-none-any.whl#sha256=5e6329fe3fecedb1d1a02c3ea2172ee0fede6cea6e4aefb6a02d832dba78a310
-sentence-transformers
-streamlit
-pandas
-spacy
-tqdm
-openai
-google-generativeai
-
-
+google-genai==2.12.1
+pandas==2.2.2
+python-dotenv==0.21.0
+# PyTorch 2.11+ defaults to CUDA-enabled wheels on Linux ARM. This application
+# embeds on CPU, so keep Docker images small and deterministic.
+--extra-index-url https://download.pytorch.org/whl/cpu
+torch==2.7.1+cpu; platform_system == "Linux"
+torch==2.7.1; platform_system == "Darwin"
+torch==2.7.1+cpu; platform_system == "Windows"
+sentence-transformers==4.1.0
+streamlit==1.37.1
+tqdm==4.66.5

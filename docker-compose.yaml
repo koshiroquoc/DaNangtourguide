@@ -1,41 +1,66 @@
-version: '3.8'
-
 services:
   elasticsearch:
     image: docker.elastic.co/elasticsearch/elasticsearch:8.18.1
-    container_name: elasticsearch
     environment:
-      - discovery.type=single-node
-      - xpack.security.enabled=false
-      - ES_JAVA_OPTS=-Xms2g -Xmx2g
+      discovery.type: single-node
+      xpack.security.enabled: "false"
+      ES_JAVA_OPTS: -Xms1g -Xmx1g
     ports:
       - "9200:9200"
-      - "9300:9300"
     volumes:
       - esdata:/usr/share/elasticsearch/data
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "curl --fail --silent 'http://localhost:9200/_cluster/health?wait_for_status=yellow&timeout=5s' >/dev/null || exit 1",
+        ]
+      interval: 5s
+      timeout: 6s
+      retries: 20
+      start_period: 20s
 
   app:
     build: .
-    container_name: danang-chatbot
+    environment:
+      ELASTICSEARCH_HOST: http://elasticsearch:9200
+      GOOGLE_API_KEY: ${GOOGLE_API_KEY:-}
+      GEMINI_API_KEY: ${GEMINI_API_KEY:-}
+      GENERATION_MODEL: ${GENERATION_MODEL:-gemma-3-12b-it}
+      FEEDBACK_DB_PATH: /app/grafana_data/chat_log.db
+      HF_HOME: /model-cache
     ports:
       - "8501:8501"
     depends_on:
-      - elasticsearch
+      elasticsearch:
+        condition: service_healthy
     volumes:
-      - .:/app
-  
+      - appdata:/app/grafana_data
+      - modelcache:/model-cache
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "python",
+          "-c",
+          "import urllib.request; urllib.request.urlopen('http://localhost:8501/_stcore/health', timeout=3)",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
   grafana:
-    image: grafana/grafana
-    container_name: grafana
+    image: grafana/grafana:latest
+    profiles: ["observability"]
     ports:
       - "3000:3000"
     volumes:
-      - ./grafana_data:/var/lib/grafana/csv
+      - appdata:/var/lib/grafana/appdata:ro
     environment:
-      - GF_INSTALL_PLUGINS=marcusolsson-csv-datasource
-  
+      GF_INSTALL_PLUGINS: frser-sqlite-datasource
 
 volumes:
   esdata:
-  grafana:
-
+  appdata:
+  modelcache:
