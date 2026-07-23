@@ -1,0 +1,43 @@
+{
+  "dataset_path": "Data/processed/places_enriched_v2.jsonl",
+  "dataset_sha256": "3a0b2feaaac5fc426e41969ca1c8f997717287f929c9a33d09400722fe582518",
+  "limitations": [
+    "Discovery relevance is weakly supervised by exact structured constraints, not human preference judgments.",
+    "Queries about price are excluded because the current real dataset has no fresh price coverage.",
+    "Subjective intents such as best, romantic, or family-friendly are excluded.",
+    "Type filters simulate the current Eat/See/Stay UI context."
+  ],
+  "tracks": {
+    "discovery": {
+      "constraint_counts": {
+        "area_type": 9,
+        "category": 44,
+        "category_area": 15,
+        "cuisine": 46,
+        "cuisine_area": 3,
+        "opening_hours_24_7": 3
+      },
+      "path": "Data/evaluation/discovery_v1.jsonl",
+      "query_count": 120,
+      "rejected_candidates": {},
+      "sha256": "2e3434403c4a18c67f651f1ede499fe73bf5d18474f4f6da81711d3c6e79ab4b",
+      "type_counts": {
+        "eat": 73,
+        "see": 30,
+        "stay": 17
+      },
+      "venue_name_leakage_count": 0
+    },
+    "name_lookup": {
+      "path": "Data/evaluation/name_lookup_v1.jsonl",
+      "query_count": 90,
+      "sha256": "72cbd463dc6094dbe7fde98f2635c49fb942cb62ce27685ee5c744b9556d5d25",
+      "type_counts": {
+        "eat": 36,
+        "see": 27,
+        "stay": 27
+      }
+    }
+  },
+  "version": 1
+}

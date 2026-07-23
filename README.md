@@ -43,6 +43,7 @@ Data/
 ├── processed/              # OSM base and enriched default snapshots
 ├── enrichment/             # CC BY-SA factual overlay + attribution
 ├── curation/               # Balanced manual verification queue
+├── evaluation/             # Fingerprinted discovery/name tracks + results
 ├── README.md               # Sources, license, and refresh policy
 └── data_danang_ok.csv      # Unchanged synthetic legacy baseline
 
@@ -55,6 +56,11 @@ data_pipeline/
 ├── schema.py               # Versioned place contract and validation
 ├── quality.py              # Quality gates and report generation
 └── legacy.py               # Explicit legacy price parsing helper
+
+evaluation/
+├── build_sets.py           # Leakage-resistant multi-relevance tracks
+├── metrics.py              # Hit@k, MRR and paired bootstrap helpers
+└── run_retrieval.py        # BM25/vector/RRF evaluation grid
 
 NoteBook/
 ├── Hybridsearch_test.ipynb # Development notebook
@@ -127,15 +133,15 @@ Visit `http://localhost:8501` and start chatting.
 ## Usage Tips
 1. Choose a category (Eat, See, or Stay).
 2. Ask natural language questions such as:
-   - "Where can I find good pho for breakfast?"
-   - "Recommend budget hotels near the beach."
+   - "Where can I find Vietnamese food in Hải Châu?"
+   - "Recommend hostels in Ngũ Hành Sơn."
 3. Receive detailed suggestions including price, location, and special notes.
 
 ## Sample Questions
 Try asking:
-- "What are good vegetarian restaurants near My Khe Beach?"
-- "Where to stay if I want a sea view under $30?"
-- "What are the must-see attractions in Da Nang at night?"
+- "Where can I find seafood in Da Nang?"
+- "Recommend a museum to visit."
+- "Which food places are open 24 hours?"
 
 ## Dependency Versions
 Runtime packages are pinned in `requirements.txt`; test dependencies are in
@@ -149,11 +155,40 @@ Pull requests are welcome. Please test any changes with the provided notebooks b
 Each module is commented with docstrings following Google style. See source files in `localguide_assistant/` for details.
 
 ## Evaluation
-The original notebook is retained as a **legacy baseline**: BM25 reached about
-**0.88 recall@5**, vector search **0.57**, and RRF hybrid search **0.86**. The
-existing questions are heavily biased toward venue-name lookup, so these
-numbers must not be treated as product-quality discovery metrics. A
-query-centric, multi-relevance evaluation set is the next project phase.
+
+The old synthetic benchmark mixed name lookup with discovery and therefore
+made BM25 look like the universal winner. It is retained only as historical
+context. Evaluation v1 uses the real, fingerprinted dataset and reports two
+tracks separately.
+
+### Discovery — 120 name-free, multi-relevance queries
+
+| Variant | Hit@1 | Hit@3 | Hit@5 | MRR@5 |
+|---|---:|---:|---:|---:|
+| BM25 | 0.292 | 0.533 | 0.650 | 0.425 |
+| Vector | 0.583 | 0.775 | 0.800 | 0.670 |
+| Hybrid RRF | **0.608** | 0.767 | 0.833 | 0.693 |
+| Weighted RRF, semantic 0.7 | 0.592 | **0.792** | **0.850** | **0.697** |
+
+### Name lookup — 90 queries
+
+| Variant | Hit@1 | Hit@3 | Hit@5 | MRR@5 |
+|---|---:|---:|---:|---:|
+| BM25 | 0.867 | **1.000** | **1.000** | 0.928 |
+| Vector | 0.822 | 0.911 | 0.911 | 0.863 |
+| Hybrid RRF | 0.944 | 0.978 | 0.989 | 0.963 |
+| Weighted RRF, semantic 0.3 | **0.956** | 0.978 | 0.989 | **0.969** |
+
+On discovery, standard hybrid RRF improves MRR@5 over BM25 by **+0.269**;
+paired bootstrap 95% CI is **[+0.200, +0.339]**. Weighted semantic 0.7 is the
+measured leader by only +0.004 MRR over standard RRF, with CI
+**[-0.026, +0.028]**. The tuned gain is not robust, so the application keeps
+the simpler standard RRF strategy instead of overfitting to this benchmark.
+
+See `docs/reports/retrieval_evaluation_v1.md` for the full grid, methodology,
+limitations, and constraint-level diagnostics. Discovery labels are exact
+structured constraints, not subjective human preference judgments; price and
+“best place” queries remain outside the supported evaluation scope.
 
 ## Limitations
 The OSM snapshot has broad coverage but sparse opening-hours, contact, and
