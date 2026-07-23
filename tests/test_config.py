@@ -24,7 +24,9 @@ def test_settings_use_local_defaults(monkeypatch: pytest.MonkeyPatch) -> None:
 
     assert settings.elasticsearch_host == "http://localhost:9200"
     assert settings.index_name == "places_danang_v2"
-    assert settings.data_path == PROJECT_ROOT / "Data/processed/places_osm_v2.jsonl"
+    assert (
+        settings.data_path == PROJECT_ROOT / "Data/processed/places_enriched_v2.jsonl"
+    )
     assert settings.feedback_db_path == PROJECT_ROOT / "grafana_data/chat_log.db"
 
 

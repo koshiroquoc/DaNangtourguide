@@ -1,0 +1,49 @@
+{
+  "applied_fields": {
+    "address": 7
+  },
+  "base_dataset": "Data/processed/places_osm_v2.jsonl",
+  "base_dataset_sha256": "d5cd6949762e66bf6110debf63a090017bd7c5a1c6cd27bfb41106be0a905c4f",
+  "base_record_count": 2557,
+  "built_at": "2026-07-21T19:29:52+00:00",
+  "enriched_place_count": 7,
+  "listing_count": 78,
+  "match_count": 28,
+  "output_dataset": "Data/processed/places_enriched_v2.jsonl",
+  "output_dataset_sha256": "3a0b2feaaac5fc426e41969ca1c8f997717287f929c9a33d09400722fe582518",
+  "overlay_dataset": "Data/enrichment/wikivoyage_da_nang_v1.jsonl",
+  "overlay_dataset_sha256": "b4d0fde488f0c4bbdc82305cd5d73f610aee09492308d52011abe9f628507e51",
+  "primary_kept_fields": {
+    "address": 14,
+    "opening_hours": 2,
+    "phone": 5
+  },
+  "product_readiness": "needs_enrichment",
+  "quality_status": "pass",
+  "queue_count": 200,
+  "queue_type_counts": {
+    "eat": 80,
+    "see": 50,
+    "stay": 70
+  },
+  "schema_version": 2,
+  "stale_fields": {
+    "address": 2,
+    "opening_hours": 2,
+    "phone": 7,
+    "price_text": 14
+  },
+  "unknown_age_fields": {
+    "address": 2
+  },
+  "wikivoyage": {
+    "attribution": "Wikivoyage contributors to Da Nang; see page history",
+    "history_url": "https://en.wikivoyage.org/w/index.php?title=Da_Nang&action=history",
+    "retrieved_at": "2026-07-21T19:29:52+00:00",
+    "revision_at": "2026-06-09T02:28:46Z",
+    "revision_id": 5289731,
+    "source_license": "CC-BY-SA-4.0",
+    "source_url": "https://en.wikivoyage.org/w/index.php?title=Da_Nang&oldid=5289731",
+    "title": "Da Nang"
+  }
+}

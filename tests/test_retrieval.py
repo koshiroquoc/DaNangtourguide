@@ -84,6 +84,7 @@ def test_bm25_uses_raw_query_and_filter_context() -> None:
         "price_min_vnd",
         "price_max_vnd",
         "price_currency",
+        "price_text",
         "source",
         "source_url",
         "source_license",
@@ -91,6 +92,8 @@ def test_bm25_uses_raw_query_and_filter_context() -> None:
         "retrieved_at",
         "last_verified_at",
         "is_synthetic",
+        "field_provenance",
+        "enrichment_sources",
         "type",
     ]
     assert results[0]["id"] == "eat_001"

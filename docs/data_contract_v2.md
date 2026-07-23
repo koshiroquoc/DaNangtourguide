@@ -26,6 +26,7 @@ every JSONL row is validated before indexing.
 | `phone`, `website` | Optional source contacts |
 | `price_min_vnd`, `price_max_vnd` | Nullable integer VND values |
 | `price_currency` | `VND`; does not imply that a price is known |
+| `price_text` | Optional source-native price text; accepted only inside its TTL |
 | `full_text` | Deterministic embedding/search text built from factual fields |
 
 ## Provenance and freshness
@@ -38,10 +39,16 @@ every JSONL row is validated before indexing.
 | `retrieved_at` | Snapshot retrieval time |
 | `last_verified_at` | Manual project verification time; currently null |
 | `is_synthetic` | Explicit synthetic-data marker |
+| `field_provenance` | Per-enriched-field URL, revision, license, timestamps, and match score |
+| `enrichment_sources` | Attribution records for the fields actually applied |
 
 `source_updated_at` is a useful staleness signal, not evidence that a venue is
 open or that every attribute is current. Product claims that need stronger
 confidence should require `last_verified_at` or a policy-compliant live source.
+
+The additive enrichment fields remain backward-compatible with the base v2
+JSONL. A wiki page revision is not manual verification and never populates
+`last_verified_at`.
 
 ## Index lifecycle
 

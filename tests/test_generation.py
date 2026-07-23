@@ -36,6 +36,28 @@ def test_prompt_labels_sources_for_citations() -> None:
     assert "Never infer opening hours, prices, or verification" in prompt
 
 
+def test_prompt_exposes_field_level_enrichment_provenance() -> None:
+    prompt = build_prompt(
+        "Where is it?",
+        [
+            {
+                "name": "Place",
+                "type": "see",
+                "address": "Fresh address",
+                "field_provenance": {
+                    "address": {
+                        "source": "Wikivoyage",
+                        "source_url": "https://example.test/revision",
+                        "source_updated_at": "2026-07-01T00:00:00Z",
+                    }
+                },
+            }
+        ],
+    )
+
+    assert "address: Wikivoyage (https://example.test/revision)" in prompt
+
+
 def test_generator_fails_early_when_key_is_missing() -> None:
     with pytest.raises(RuntimeError, match="GOOGLE_API_KEY"):
         GoogleGenerator(make_settings(None))

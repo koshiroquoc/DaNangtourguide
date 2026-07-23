@@ -28,7 +28,7 @@ services:
       GEMINI_API_KEY: ${GEMINI_API_KEY:-}
       GENERATION_MODEL: ${GENERATION_MODEL:-gemma-3-12b-it}
       ELASTICSEARCH_INDEX: ${ELASTICSEARCH_INDEX:-places_danang_v2}
-      DATA_PATH: ${DATA_PATH:-/app/Data/processed/places_osm_v2.jsonl}
+      DATA_PATH: ${DATA_PATH:-/app/Data/processed/places_enriched_v2.jsonl}
       FEEDBACK_DB_PATH: /app/grafana_data/chat_log.db
       HF_HOME: /model-cache
     ports:

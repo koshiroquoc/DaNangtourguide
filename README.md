@@ -11,16 +11,19 @@ Travelers often struggle to find truly local recommendations. This project solve
 
 ## Dataset
 
-The default dataset is now a reproducible, provenance-backed OpenStreetMap
-snapshot in `Data/processed/places_osm_v2.jsonl`. Every record links to its
-upstream OSM element and includes its source license, edit timestamp, snapshot
-timestamp, coordinates, and an explicit synthetic-data flag.
+The default dataset is now `Data/processed/places_enriched_v2.jsonl`: a
+reproducible OpenStreetMap base plus a conservative Wikivoyage factual overlay.
+Every record links to its upstream OSM element; every accepted enrichment field
+also stores its own source revision, license, timestamps, and match score.
 
 The original 299-row generated CSV remains unchanged as a legacy evaluation
 baseline. It is no longer presented as verified local data. Missing OSM facts
 such as prices and manually verified status remain null rather than being
 generated. See `Data/README.md`, `docs/data_contract_v2.md`, and the generated
 quality report in `docs/reports/data_quality_osm.md`.
+The enrichment report and balanced 200-place manual verification queue are in
+`docs/reports/enrichment_report.md` and
+`Data/curation/verification_queue_v1.csv`.
 
 ## Project Structure
 ```
@@ -37,12 +40,17 @@ localguide_assistant/
 └── Images/                 # UI assets
 
 Data/
-├── processed/              # Provenance-backed OSM v2 snapshot + metadata
+├── processed/              # OSM base and enriched default snapshots
+├── enrichment/             # CC BY-SA factual overlay + attribution
+├── curation/               # Balanced manual verification queue
 ├── README.md               # Sources, license, and refresh policy
 └── data_danang_ok.csv      # Unchanged synthetic legacy baseline
 
 data_pipeline/
 ├── build_dataset.py        # Reproducible Overpass snapshot command
+├── build_enriched_dataset.py # Wikivoyage overlay + verification queue
+├── enrichment.py           # Matching, TTL and fill-null-only rules
+├── wikivoyage.py           # MediaWiki fetch and structured listing parser
 ├── osm.py                  # OSM query, normalization, and deduplication
 ├── schema.py               # Versioned place contract and validation
 ├── quality.py              # Quality gates and report generation

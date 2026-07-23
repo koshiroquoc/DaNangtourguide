@@ -1,0 +1,24 @@
+== Eat ==
+* {{eat
+| name=Quán Mì Quảng Thật
+| address=12 Đường Mẫu, Hải Châu
+| lat=16.0544
+| long=108.2022
+| phone=+84 236 123 456
+| hours=06:00-21:00
+| price=40,000-60,000 VND
+| lastedit=2026-07-01
+| content=This prose must never be copied into the enrichment overlay.
+}}
+
+== Sleep ==
+* {{sleep
+| name=Khách sạn Biển Mẫu
+| address=99 Võ Nguyên Giáp
+| lat=16.0611
+| long=108.2277
+| url=https://example.org/hotel
+| price=US$10 (Jan 2018)
+| lastedit=2018-01-31
+| content=Old prose and old prices must not become current facts.
+}}

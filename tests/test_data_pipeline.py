@@ -39,6 +39,17 @@ def test_same_name_nearby_geometry_is_deduplicated() -> None:
     assert len(deduplicate_records([first, duplicate])) == 1
 
 
+def test_field_provenance_requires_source_metadata() -> None:
+    record = {
+        **sample_records()[0],
+        "field_provenance": {"address": {"source": "Unknown"}},
+    }
+
+    errors = validate_record(record)
+
+    assert any("field_provenance.address missing" in error for error in errors)
+
+
 def test_legacy_price_parser_does_not_use_usd_approximation() -> None:
     assert parse_vnd_price("35k VND (~1.4$)") == (35_000, 35_000)
     assert parse_vnd_price("100k-200k VND") == (100_000, 200_000)
