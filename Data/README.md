@@ -1,6 +1,19 @@
 # Data sources and licensing
 
-## Default dataset: OpenStreetMap snapshot
+## Default dataset: provenance-aware enriched snapshot
+
+`processed/places_enriched_v2.jsonl` is the application default. It starts
+from the OSM snapshot below and applies only high-confidence, in-TTL,
+non-conflicting structured fields from Wikivoyage. Each applied field has its
+own provenance object. See `enrichment/README.md`,
+`processed/places_enriched_v2.meta.json`, and
+`../docs/reports/enrichment_report.md`.
+
+The enrichment build also produces
+`curation/verification_queue_v1.csv`: a balanced 200-place manual workload.
+It is a gap-based curation queue, not a popularity ranking.
+
+## Base dataset: OpenStreetMap snapshot
 
 `processed/places_osm_v2.jsonl` is a normalized snapshot of named food,
 tourism, historic, and selected natural features in the Da Nang travel area.
@@ -54,6 +67,7 @@ attribution, and retention controls; it is not mixed into this snapshot.
 
 ```bash
 python -m data_pipeline.build_dataset
+python -m data_pipeline.build_enriched_dataset
 python -m data_pipeline.validate_dataset
 python -m pytest -q
 ```

@@ -30,6 +30,7 @@ SOURCE_FIELDS = [
     "price_min_vnd",
     "price_max_vnd",
     "price_currency",
+    "price_text",
     "source",
     "source_url",
     "source_license",
@@ -37,6 +38,8 @@ SOURCE_FIELDS = [
     "retrieved_at",
     "last_verified_at",
     "is_synthetic",
+    "field_provenance",
+    "enrichment_sources",
     "type",
 ]
 VALID_TYPES = {"eat", "see", "stay"}

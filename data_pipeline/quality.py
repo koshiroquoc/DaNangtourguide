@@ -20,7 +20,7 @@ COMPLETENESS_FIELDS = (
     "website",
     "source_updated_at",
     "last_verified_at",
-    "price_min_vnd",
+    "price",
 )
 
 
@@ -40,28 +40,22 @@ def assess_records(records: list[dict[str, Any]]) -> dict[str, Any]:
             )
 
     count = len(records)
-    completeness = {
-        field: {
-            "count": sum(
-                record.get(field) is not None and record.get(field) != ""
-                for record in records
-            ),
-            "percent": (
-                round(
-                    100
-                    * sum(
-                        record.get(field) is not None and record.get(field) != ""
-                        for record in records
-                    )
-                    / count,
-                    1,
-                )
-                if count
-                else 0.0
-            ),
+
+    def is_present(record: dict[str, Any], field: str) -> bool:
+        if field == "price":
+            return any(
+                record.get(candidate) not in {None, ""}
+                for candidate in ("price_min_vnd", "price_max_vnd", "price_text")
+            )
+        return record.get(field) not in {None, ""}
+
+    completeness = {}
+    for field in COMPLETENESS_FIELDS:
+        present = sum(is_present(record, field) for record in records)
+        completeness[field] = {
+            "count": present,
+            "percent": round(100 * present / count, 1) if count else 0.0,
         }
-        for field in COMPLETENESS_FIELDS
-    }
     duplicate_ids = sorted(
         value for value, occurrences in ids.items() if occurrences > 1
     )
@@ -111,8 +105,7 @@ def assess_records(records: list[dict[str, Any]]) -> dict[str, Any]:
             "percent"
         ]
         >= 50.0,
-        "price_coverage_at_least_30_percent": completeness["price_min_vnd"]["percent"]
-        >= 30.0,
+        "price_coverage_at_least_30_percent": completeness["price"]["percent"] >= 30.0,
         "manual_verification_coverage_at_least_20_percent": completeness[
             "last_verified_at"
         ]["percent"]

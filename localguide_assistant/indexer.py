@@ -15,7 +15,11 @@ from elasticsearch import Elasticsearch, helpers
 from .config import Settings
 
 
-from data_pipeline.schema import PLACE_FIELDS, validate_record
+from data_pipeline.schema import (
+    ALL_PLACE_FIELDS,
+    validate_record,
+    with_optional_defaults,
+)
 
 
 def build_index_mapping(*, vector_dims: int, dataset_sha256: str) -> dict[str, Any]:
@@ -42,6 +46,7 @@ def build_index_mapping(*, vector_dims: int, dataset_sha256: str) -> dict[str, A
                 "price_min_vnd": {"type": "integer"},
                 "price_max_vnd": {"type": "integer"},
                 "price_currency": {"type": "keyword"},
+                "price_text": {"type": "text"},
                 "source": {"type": "keyword"},
                 "source_id": {"type": "keyword"},
                 "source_url": {"type": "keyword", "ignore_above": 2048},
@@ -50,6 +55,8 @@ def build_index_mapping(*, vector_dims: int, dataset_sha256: str) -> dict[str, A
                 "retrieved_at": {"type": "date"},
                 "last_verified_at": {"type": "date"},
                 "is_synthetic": {"type": "boolean"},
+                "field_provenance": {"type": "object", "enabled": False},
+                "enrichment_sources": {"type": "object", "enabled": False},
                 # Legacy fields remain mapped so DATA_PATH can still point to the
                 # original synthetic CSV for controlled baseline comparisons.
                 "time": {"type": "keyword"},
@@ -144,7 +151,10 @@ def load_records(path: Path) -> list[dict[str, Any]]:
                         f"Dataset line {line_number} violates schema v2: "
                         + "; ".join(violations)
                     )
-                records.append({field: record[field] for field in PLACE_FIELDS})
+                normalized = with_optional_defaults(record)
+                records.append(
+                    {field: normalized.get(field) for field in ALL_PLACE_FIELDS}
+                )
         if not records:
             raise ValueError("Dataset is empty")
         return records

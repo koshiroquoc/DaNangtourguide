@@ -29,11 +29,18 @@ def build_prompt(query: str, search_results: list[dict[str, Any]]) -> str:
         minimum = result.get("price_min_vnd")
         maximum = result.get("price_max_vnd")
         if minimum is None and maximum is None:
-            price = "Unknown"
+            price = result.get("price_text") or "Unknown"
         elif minimum == maximum or maximum is None:
             price = f"{minimum:,} VND"
         else:
             price = f"{minimum:,}-{maximum:,} VND"
+        provenance = result.get("field_provenance") or {}
+        provenance_lines = [
+            f"{field}: {details.get('source')} ({details.get('source_url')}), "
+            f"updated {details.get('source_updated_at') or 'unknown'}"
+            for field, details in sorted(provenance.items())
+            if isinstance(details, dict)
+        ]
         entries.append(
             "\n".join(
                 [
@@ -52,6 +59,8 @@ def build_prompt(query: str, search_results: list[dict[str, Any]]) -> str:
                     f"Source URL: {result.get('source_url') or 'Unknown'}",
                     f"Source updated: {result.get('source_updated_at') or 'Unknown'}",
                     f"Manually verified: {result.get('last_verified_at') or 'No'}",
+                    "Enriched field provenance: "
+                    + ("; ".join(provenance_lines) if provenance_lines else "None"),
                 ]
             )
         )

@@ -105,9 +105,22 @@ def _render_sources(sources: list[dict[str, Any]]) -> None:
             st.caption(
                 f"Source record updated: {source_updated} · Project status: {verification}"
             )
+            for enrichment in source.get("enrichment_sources") or []:
+                fields = ", ".join(enrichment.get("fields") or [])
+                history_url = enrichment.get("source_history_url")
+                history = f" · [history/authors]({history_url})" if history_url else ""
+                st.caption(
+                    f"Enriched fields ({fields}): "
+                    f"[{enrichment.get('source', 'source')}]({enrichment.get('source_url')}) "
+                    f"· {enrichment.get('source_license', '')}{history}"
+                )
         if any(source.get("source") == "OpenStreetMap" for source in sources):
             st.caption(
                 "[© OpenStreetMap contributors](https://www.openstreetmap.org/copyright) · ODbL 1.0"
+            )
+        if any(source.get("enrichment_sources") for source in sources):
+            st.caption(
+                "Wikivoyage enrichment: CC BY-SA 4.0 · attribution/history links are retained in the dataset"
             )
 
 

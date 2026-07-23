@@ -56,7 +56,7 @@ class Settings:
             data_path=Path(
                 os.getenv(
                     "DATA_PATH",
-                    str(PROJECT_ROOT / "Data/processed/places_osm_v2.jsonl"),
+                    str(PROJECT_ROOT / "Data/processed/places_enriched_v2.jsonl"),
                 )
             ).expanduser(),
             feedback_db_path=Path(
